@@ -12,7 +12,7 @@ local DB_PORT = 3306
 local Forum_Mod = "phpbb"
 
 --Should it sync according to SMF/MyBB/phpBB's groups?
-local FORUM_to_ULX = false
+local FORUM_to_ULX = true
 
 --Should it sync according to ULX groups?
 local ULX_to_FORUM = true
@@ -34,18 +34,9 @@ local Forum_Table = "phpbb_auto_"
 --Every line except the last one should be followed
 --by a comma.
 GroupID={
-    ["user"]=0, --0 is the default SMF group; 2 is the default MyBB group and phpBB
-    ["moderator"]=4,
-    ["superadmin"]=13
-}
-
---Reversed GroupID, its like above but in reverse.
---This had to be done due to the original code was faulty
---on the ReverseGroupID.
-ReversedGroupID={
-    0=["user"], --0 is the default SMF group; 2 is the default MyBB group and phpBB
-    4=["moderator"],
-    13=["superadmin"]
+	["user"]=0, --0 is the default SMF group; 2 is the default MyBB group and phpBB
+	["moderator"]=4,
+	["superadmin"]=13
 }
 
 --==========================================--
@@ -104,20 +95,6 @@ function splitPort(ip)
 	return str
 end
 
-function FlipTable(table, NewTable)
-	local NewTable = {}
-	
-	for k, v in next, table do
-		local key = k
-		local value = tostring(v)
-
-		table.v = k
-	end
-
-	return NewTable
-end
-
-
 function playerJoin(pl)
 	if not pl:IsValid() then return end
 
@@ -172,17 +149,48 @@ function playerJoin(pl)
 
 		if FORUM_to_ULX then
 			if data then
-				FlipTable(GroupID, ReversedGroupID)
-
 				if low_mod == "smf" then
-					ULib.ucl.addUser(pl:SteamID(), {}, {}, ReversedGroupID[data[1]["id_group"]])
-					log("SMF User "..pl:SteamID.." Added to GroupID: "..data[1]["id_group"])
+
+					ForumID = data[1]["id_group"]
+
+					if ForumID == "0" then
+						ReversedGroupID = "user"
+					elseif ForumID == "4" then
+						ReversedGroupID = "moderator"
+					elseif ForumID == "13" then
+						ReversedGroupID = "superadmin"
+					end
+
+					ULib.ucl.addUser(steamID, {}, {}, ReversedGroupID)
+					log("SMF User "..steamID.." Added to GroupID: "..ReversedGroupID)
 				elseif low_mod == "mybb" then
-					ULib.ucl.addUser(pl:SteamID(), {}, {}, ReversedGroupID[data[1]["usergroup"]])
-					log("MyBB User "..pl:SteamID.." Added to GroupID: "..data[1]["id_group"])
+
+					ForumID = data[1]["usergroup"]
+
+					if ForumID == "0" then
+						ReversedGroupID = "user"
+					elseif ForumID == "4" then
+						ReversedGroupID = "moderator"
+					elseif ForumID == "13" then
+						ReversedGroupID = "superadmin"
+					end
+
+					ULib.ucl.addUser(steamID, {}, {}, ReversedGroupID)
+					log("MyBB User "..steamID.." Added to GroupID: "..ReversedGroupID)
 				elseif low_mod == "phpbb" then
-					ULib.ucl.addUser(pl:SteamID(), {}, {}, ReversedGroupID[data[1]["group_id"]])
-					log("phpBB User "..pl:SteamID.." Added to GroupID: "..data[1]["id_group"])
+
+					ForumID = data[1]["group_id"]
+
+					if ForumID == "0" then
+						ReversedGroupID = "user"
+					elseif ForumID == "4" then
+						ReversedGroupID = "moderator"
+					elseif ForumID == "13" then
+						ReversedGroupID = "superadmin"
+					end
+
+					ULib.ucl.addUser(steamID, {}, {}, ReversedGroupID)
+					log("phpBB User "..steamID.." Added to GroupID: "..ReversedGroupID)
 				end
 			elseif not data then
 				log("FORUM_to_ULX can't send the data and/or the database wasn't read correctly.")

@@ -164,7 +164,13 @@ function playerJoin(pl)
 		if FORUM_to_ULX then
 			FlipTable(GroupID, ReversedGroupID)
 
-			ULib.ucl.addUser(pl:SteamID(), {}, {}, ReversedGroupID[data[1]["id_group"]])
+			if low_mod == "smf" then
+				ULib.ucl.addUser(pl:SteamID(), {}, {}, ReversedGroupID[data[1]["id_group"]])
+			elseif low_mod == "mybb" then
+				ULib.ucl.addUser(pl:SteamID(), {}, {}, ReversedGroupID[data[1]["usergroup"]])
+			elseif low_mod == "phpbb" then
+				ULib.ucl.addUser(pl:SteamID(), {}, {}, ReversedGroupID[data[1]["group_id"]])
+			end
 		end
 	end)
 end
